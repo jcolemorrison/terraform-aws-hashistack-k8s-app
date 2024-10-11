@@ -51,6 +51,7 @@ resource "kubernetes_manifest" "deployment_application" {
             app = var.application_name
           }
           annotations = {
+            "vault.hashicorp.com/auth-path"                     = "auth/hashistack-${var.hashistack_sandbox_name}-config-kubernetes"
             "vault.hashicorp.com/agent-inject"                  = "true"
             "vault.hashicorp.com/role"                          = "appkey-role"
             "vault.hashicorp.com/agent-inject-secret-appkey"    = "secrets/data/appkey"
@@ -77,7 +78,7 @@ resource "kubernetes_manifest" "deployment_application" {
                   value = var.application_name
                 }
               ]
-              image = var.default_container_image
+              image = var.container_image
               name  = var.application_name
               ports = [
                 {
@@ -90,13 +91,13 @@ resource "kubernetes_manifest" "deployment_application" {
                   memory = "512Mi"
                 }
                 requests = {
-                  cpu    = "250m"
-                  memory = "256Mi"
+                  cpu    = "125m"
+                  memory = "128Mi"
                 }
               }
               command = ["sh", "-c"]
               args = [
-                "source /vault/secrets/config && /app/fake-service"
+                "source /vault/secrets/config && ${var.application_entrypoint}"
               ]
             },
           ]
