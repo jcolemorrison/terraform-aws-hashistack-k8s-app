@@ -51,12 +51,17 @@ resource "kubernetes_manifest" "deployment_application" {
             app = var.application_name
           }
           annotations = {
-            "vault.hashicorp.com/auth-path"                     = "auth/hashistack-${var.hashistack_sandbox_name}-config-kubernetes"
-            "vault.hashicorp.com/agent-inject"                  = "true"
-            "vault.hashicorp.com/role"                          = "appkey-role"
-            "vault.hashicorp.com/agent-inject-secret-appkey"    = "secrets/data/appkey"
-            "vault.hashicorp.com/namespace"                     = "admin"
-            "vault.hashicorp.com/agent-inject-template-config"  = <<EOF
+            "vault.hashicorp.com/auth-path"                                 = "auth/hashistack-${var.hashistack_sandbox_name}-config-kubernetes"
+            "vault.hashicorp.com/agent-inject"                              = "true"
+            "vault.hashicorp.com/agent-run-as-user"                         = 1000
+            "vault.hashicorp.com/agent-run-as-group"                        = 3000
+            "vault.hashicorp.com/agent-share-process-namespace"             = "true"
+            "vault.hashicorp.com/role"                                      = "appkey-role"
+            "vault.hashicorp.com/agent-inject-secret-config"                = "secrets/data/appkey"
+            "vault.hashicorp.com/agent-inject-command-config"               = "kill -TERM $(pidof fake-service)"
+            "vault.hashicorp.com/namespace"                                 = "admin"
+            "vault.hashicorp.com/template-static-secret-render-interval"    = "30s"
+            "vault.hashicorp.com/agent-inject-template-config"              = <<EOF
             {{- with secret "secrets/data/appkey" -}}
               export MESSAGE="Hello from the ${var.application_name} Service with APP Key of {{ .Data.data.foo }}!"
             {{- end }}
